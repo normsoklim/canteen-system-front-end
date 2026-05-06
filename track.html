@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CanteenGo — Track Your Order</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <style>
+    :root{--saffron:#ff6b2b;--gold:#ffb830;--charcoal:#1c1c1e;--mint:#00c9a7;--dark:#111113;}
+    *{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+    body{font-family:"DM Sans",sans-serif;background:var(--charcoal);color:#fff;}
+    nav{position:sticky;top:0;z-index:100;padding:18px 5%;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);background:rgba(28,28,30,.92);border-bottom:1px solid rgba(255,107,43,.15);}
+    .nav-logo{font-family:"Playfair Display",serif;font-size:1.6rem;font-weight:900;color:var(--saffron);text-decoration:none;}
+    .nav-logo span{color:var(--gold);}
+    .nav-links{display:flex;gap:28px;list-style:none;}
+    .nav-links a{color:rgba(255,255,255,.7);text-decoration:none;font-size:.9rem;font-weight:500;transition:.3s;}
+    .nav-links a:hover,.nav-links a.active{color:#fff;}
+    .nav-account{color:rgba(255,255,255,.6);text-decoration:none;font-size:.88rem;font-weight:500;padding:8px 18px;border:1.5px solid rgba(255,255,255,.15);border-radius:50px;transition:.3s;}
+    .nav-account:hover{border-color:var(--saffron);color:var(--saffron);}
+
+    .track-container{max-width:1060px;margin:0 auto;padding:48px 5%;}
+    .page-hero{margin-bottom:40px;}
+    .page-title{font-family:"Playfair Display",serif;font-size:2.4rem;font-weight:900;margin-bottom:6px;}
+    .page-sub{color:rgba(255,255,255,.45);font-size:.95rem;}
+
+    /* SEARCH */
+    .search-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:26px;margin-bottom:28px;}
+    .search-card h3{font-size:.95rem;font-weight:700;margin-bottom:14px;color:rgba(255,255,255,.75);}
+    .search-row{display:flex;gap:10px;flex-wrap:wrap;}
+    .track-input{flex:1;min-width:200px;padding:13px 18px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#fff;font-size:.92rem;font-family:"DM Sans",sans-serif;outline:none;transition:.3s;}
+    .track-input:focus{border-color:var(--saffron);}
+    .track-input::placeholder{color:rgba(255,255,255,.28);}
+    .track-btn{padding:13px 26px;background:var(--saffron);border:none;border-radius:12px;color:#fff;font-weight:700;cursor:pointer;transition:.3s;font-family:"DM Sans",sans-serif;display:flex;align-items:center;gap:8px;}
+    .track-btn:hover{background:#e85a1f;}
+    .quick-orders{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+    .quick-chip{padding:5px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:50px;font-size:.76rem;cursor:pointer;color:rgba(255,255,255,.5);transition:.3s;font-family:"Space Mono",monospace;}
+    .quick-chip:hover{border-color:var(--saffron);color:var(--saffron);}
+
+    /* ACTIVE ORDER CARD */
+    .active-order{background:rgba(255,255,255,.04);border:1px solid rgba(255,107,43,.2);border-radius:20px;padding:30px;margin-bottom:28px;position:relative;overflow:hidden;}
+    .active-order::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--saffron),var(--gold));}
+    .live-badge{position:absolute;top:20px;right:20px;background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#ff6b6b;font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:50px;display:flex;align-items:center;gap:5px;}
+    .live-dot{width:6px;height:6px;border-radius:50%;background:#ff4444;animation:blink 1.2s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .order-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+    .order-id-badge{background:rgba(255,107,43,.1);border:1px solid rgba(255,107,43,.25);border-radius:10px;padding:7px 14px;font-family:"Space Mono",monospace;font-size:.88rem;color:var(--saffron);}
+    .status-badge{padding:8px 16px;border-radius:50px;font-size:.8rem;font-weight:700;}
+    .status-preparing{background:rgba(255,184,48,.12);color:var(--gold);border:1px solid rgba(255,184,48,.25);}
+    .status-ready{background:rgba(0,201,167,.12);color:var(--mint);border:1px solid rgba(0,201,167,.25);}
+    .status-completed{background:rgba(109,200,109,.1);color:#6dc86d;border:1px solid rgba(109,200,109,.2);}
+    .header-actions{display:flex;gap:8px;align-items:center;}
+    .action-btn{padding:7px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;cursor:pointer;font-size:.78rem;font-family:"DM Sans",sans-serif;transition:.3s;display:flex;align-items:center;gap:6px;}
+    .action-btn:hover{border-color:var(--saffron);color:var(--saffron);}
+
+    /* ETA BOX */
+    .eta-box{background:linear-gradient(135deg,rgba(0,201,167,.08),rgba(255,184,48,.08));border:1px solid rgba(0,201,167,.18);border-radius:16px;padding:18px 22px;display:flex;align-items:center;gap:18px;margin-bottom:24px;flex-wrap:wrap;}
+    .eta-icon{font-size:2.2rem;flex-shrink:0;}
+    .eta-label{font-size:.76rem;color:rgba(255,255,255,.45);margin-bottom:4px;}
+    .eta-time{font-family:"Space Mono",monospace;font-size:1.9rem;font-weight:700;color:var(--mint);}
+    .eta-info{margin-left:auto;text-align:right;font-size:.78rem;color:rgba(255,255,255,.38);line-height:1.7;}
+
+    /* PROGRESS BAR */
+    .progress-bar-wrap{margin-bottom:24px;}
+    .prog-bar-label{font-size:.76rem;color:rgba(255,255,255,.38);margin-bottom:6px;display:flex;justify-content:space-between;}
+    .prog-bar-bg{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;}
+    .prog-bar-fill{height:100%;background:linear-gradient(90deg,var(--saffron),var(--gold));border-radius:3px;transition:width 1s ease;width:40%;}
+
+    /* TIMELINE */
+    .timeline{position:relative;padding-left:36px;margin-bottom:28px;}
+    .timeline::before{content:"";position:absolute;left:13px;top:20px;bottom:20px;width:2px;background:rgba(255,255,255,.08);}
+    .timeline-item{position:relative;margin-bottom:28px;}
+    .timeline-item:last-child{margin-bottom:0;}
+    .tl-dot{position:absolute;left:-29px;top:4px;width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,.12);background:var(--charcoal);display:flex;align-items:center;justify-content:center;font-size:.7rem;z-index:1;transition:.5s;}
+    .tl-dot.done{border-color:var(--mint);background:var(--mint);color:#000;}
+    .tl-dot.active{border-color:var(--saffron);background:var(--saffron);color:#fff;animation:tl-pulse 1.5s infinite;}
+    @keyframes tl-pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,107,43,.4)}50%{box-shadow:0 0 0 10px rgba(255,107,43,0)}}
+    .tl-title{font-weight:700;font-size:.92rem;margin-bottom:3px;}
+    .tl-time{font-size:.76rem;color:rgba(255,255,255,.38);margin-bottom:3px;}
+    .tl-desc{font-size:.8rem;color:rgba(255,255,255,.48);}
+    .tl-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:50px;font-size:.68rem;font-weight:700;margin-top:4px;}
+    .chip-done{background:rgba(0,201,167,.12);color:var(--mint);}
+    .chip-active{background:rgba(255,107,43,.12);color:var(--saffron);}
+
+    /* ORDER ITEMS */
+    .order-items-list{border-top:1px solid rgba(255,255,255,.06);padding-top:18px;}
+    .oi-header{font-size:.76rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.38);margin-bottom:12px;}
+    .oi-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04);}
+    .oi-item:last-child{border:none;}
+    .oi-img{width:50px;height:50px;border-radius:10px;overflow:hidden;flex-shrink:0;}
+    .oi-img img{width:100%;height:100%;object-fit:cover;}
+    .oi-name{flex:1;font-weight:600;font-size:.88rem;}
+    .oi-status{font-size:.7rem;padding:2px 8px;border-radius:50px;}
+    .oi-ready{background:rgba(0,201,167,.12);color:var(--mint);}
+    .oi-cooking{background:rgba(255,184,48,.12);color:var(--gold);}
+    .oi-qty{color:rgba(255,255,255,.38);font-size:.8rem;}
+    .oi-price{font-family:"Space Mono",monospace;font-size:.85rem;color:var(--gold);}
+    .order-footer-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+
+    /* RATING PROMPT */
+    .rate-card{background:linear-gradient(135deg,rgba(255,107,43,.08),rgba(255,184,48,.08));border:1px solid rgba(255,107,43,.18);border-radius:16px;padding:22px;margin-bottom:22px;text-align:center;display:none;}
+    .rate-title{font-weight:700;font-size:1rem;margin-bottom:6px;}
+    .rate-sub{font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:16px;}
+    .stars-input{display:flex;justify-content:center;gap:6px;margin-bottom:14px;}
+    .star-btn{font-size:1.6rem;cursor:pointer;transition:.2s;opacity:.4;}
+    .star-btn:hover,.star-btn.lit{opacity:1;}
+    .rate-submit{padding:10px 28px;background:var(--saffron);border:none;border-radius:10px;color:#fff;font-weight:700;cursor:pointer;transition:.3s;font-family:"DM Sans",sans-serif;}
+    .rate-submit:hover{background:#e85a1f;}
+
+    /* HISTORY */
+    .history-section{margin-top:40px;}
+    .history-title{font-family:"Playfair Display",serif;font-size:1.5rem;font-weight:900;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;}
+    .history-filter{display:flex;gap:8px;margin-bottom:16px;}
+    .hist-tab{padding:6px 14px;border-radius:50px;border:1.5px solid rgba(255,255,255,.1);background:transparent;color:rgba(255,255,255,.45);font-size:.78rem;font-weight:500;cursor:pointer;transition:.25s;font-family:"DM Sans",sans-serif;}
+    .hist-tab.active,.hist-tab:hover{border-color:var(--saffron);color:var(--saffron);background:rgba(255,107,43,.08);}
+    .history-item{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:18px 22px;margin-bottom:12px;display:flex;align-items:center;gap:18px;transition:.3s;cursor:pointer;flex-wrap:wrap;}
+    .history-item:hover{border-color:rgba(255,107,43,.22);background:rgba(255,107,43,.03);}
+    .h-status-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+    .dot-completed{background:var(--mint);}
+    .dot-cancelled{background:#ff4444;}
+    .h-id{font-family:"Space Mono",monospace;font-size:.83rem;color:var(--saffron);min-width:90px;}
+    .h-items{flex:1;font-size:.86rem;color:rgba(255,255,255,.55);min-width:140px;}
+    .h-badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:50px;}
+    .hb-completed{background:rgba(0,201,167,.12);color:var(--mint);}
+    .hb-cancelled{background:rgba(255,68,68,.12);color:#ff6b6b;}
+    .h-date{font-size:.78rem;color:rgba(255,255,255,.3);min-width:110px;text-align:right;}
+    .h-total{font-family:"Space Mono",monospace;font-size:.88rem;color:var(--gold);min-width:75px;text-align:right;}
+    .h-reorder{padding:5px 12px;background:rgba(255,107,43,.1);border:1px solid rgba(255,107,43,.22);border-radius:8px;color:var(--saffron);font-size:.72rem;font-weight:700;cursor:pointer;transition:.2s;font-family:"DM Sans",sans-serif;}
+    .h-reorder:hover{background:var(--saffron);color:#fff;}
+
+    /* RECEIPT MODAL */
+    .receipt-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;}
+    .receipt-box{background:#1a1a1a;border:1px solid rgba(255,255,255,.1);border-radius:22px;padding:36px;max-width:390px;width:92%;max-height:88vh;overflow-y:auto;}
+    .receipt-header{text-align:center;margin-bottom:20px;}
+    .receipt-logo{font-family:"Playfair Display",serif;font-size:1.4rem;font-weight:900;color:var(--saffron);}
+    .receipt-line{border:none;border-top:2px dashed rgba(255,255,255,.1);margin:14px 0;}
+    .receipt-row{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:8px;color:rgba(255,255,255,.7);}
+    .receipt-row.bold{font-weight:700;color:#fff;}
+    .receipt-row span:last-child{font-family:"Space Mono",monospace;}
+    .r-qr{width:96px;height:96px;background:#fff;border-radius:10px;padding:5px;margin:16px auto;display:flex;align-items:center;justify-content:center;}
+    .r-qr img{width:100%;height:100%;}
+    .receipt-actions{display:flex;gap:10px;margin-top:16px;}
+    .r-btn{flex:1;padding:12px;border-radius:12px;font-weight:700;font-size:.86rem;cursor:pointer;font-family:"DM Sans",sans-serif;transition:.3s;}
+    .r-primary{background:var(--saffron);border:none;color:#fff;}
+    .r-primary:hover{background:#e85a1f;}
+    .r-secondary{background:transparent;border:1.5px solid rgba(255,255,255,.18);color:#fff;}
+    .r-secondary:hover{border-color:#fff;}
+
+    @keyframes slideIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+    @media(max-width:700px){.nav-links{display:none}.history-item{flex-wrap:wrap}.h-date,.h-total{text-align:left}}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-logo">Canteen<span>Go</span></a>
+    <ul class="nav-links">
+      <li><a href="menu.html">Menu</a></li>
+      <li><a href="order.html">Order</a></li>
+      <li><a href="track.html" class="active">Track</a></li>
+      <li><a href="report.html">Reports</a></li>
+      <li><a href="delivery.html">Delivery</a></li>
+      <li><a href="about.html">About</a></li>
+    </ul>
+    <a href="login.html" class="nav-account"><i class="fas fa-user"></i> My Account</a>
+  </nav>
+
+  <div class="track-container">
+    <div class="page-hero">
+      <h1 class="page-title">📡 Track Your Order</h1>
+      <p class="page-sub">Real-time kitchen updates and order history — all in one place.</p>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-card">
+      <h3>🔍 Find an Order</h3>
+      <div class="search-row">
+        <input type="text" class="track-input" placeholder="Enter Order ID — e.g. CG-1084" id="searchInput" value="CG-1084"/>
+        <button class="track-btn" onclick="trackOrder()"><i class="fas fa-search"></i> Track</button>
+      </div>
+      <div style="margin-top:12px;font-size:.78rem;color:rgba(255,255,255,.32);">Recent orders:</div>
+      <div class="quick-orders">
+        <span class="quick-chip" onclick="setSearch('CG-1084')">#CG-1084</span>
+        <span class="quick-chip" onclick="setSearch('CG-1082')">#CG-1082</span>
+        <span class="quick-chip" onclick="setSearch('CG-1071')">#CG-1071</span>
+      </div>
+    </div>
+
+    <!-- ACTIVE ORDER -->
+    <div class="active-order">
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+
+      <div class="order-header">
+        <div>
+          <div style="font-size:.76rem;color:rgba(255,255,255,.35);margin-bottom:5px;">Current Active Order</div>
+          <div class="order-id-badge">#CG-1084</div>
+        </div>
+        <div class="header-actions">
+          <span class="status-badge status-preparing" id="statusBadge">🔥 Preparing</span>
+          <button class="action-btn" onclick="showReceipt()"><i class="fas fa-receipt"></i> Receipt</button>
+          <button class="action-btn" onclick="showToastMsg('Help request sent to staff!')"><i class="fas fa-bell"></i> Call Staff</button>
+        </div>
+      </div>
+
+      <!-- ETA -->
+      <div class="eta-box">
+        <div class="eta-icon">⏱</div>
+        <div>
+          <div class="eta-label">Estimated Ready Time</div>
+          <div class="eta-time" id="etaTimer">08:12</div>
+        </div>
+        <div class="eta-info">
+          Table 5 · Block A<br/>
+          Dine In · Staff: Aminah<br/>
+          Ordered: 12:34 PM
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div class="progress-bar-wrap">
+        <div class="prog-bar-label">
+          <span>Order Progress</span>
+          <span id="progressPct">40% complete</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="progressFill"></div></div>
+      </div>
+
+      <!-- TIMELINE -->
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="tl-dot done"><i class="fas fa-check"></i></div>
+          <div class="tl-title" style="color:var(--mint);">✅ Order Placed</div>
+          <div class="tl-time">12:34 PM</div>
+          <div class="tl-desc">Order #CG-1084 confirmed and sent to the kitchen.</div>
+          <span class="tl-chip chip-done">Confirmed</span>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot done"><i class="fas fa-check"></i></div>
+          <div class="tl-title" style="color:var(--mint);">✅ Payment Confirmed</div>
+          <div class="tl-time">12:34 PM</div>
+          <div class="tl-desc">Cash payment recorded. Total: RM 44.40</div>
+          <span class="tl-chip chip-done">Paid</span>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot active" id="dot3"><i class="fas fa-utensils"></i></div>
+          <div class="tl-title" id="step3title">🔥 Being Prepared</div>
+          <div class="tl-time" id="step3time">12:36 PM · In Progress</div>
+          <div class="tl-desc" id="step3desc">Chef Aminah is preparing your Nasi Lemak and Ramen — almost done!</div>
+          <span class="tl-chip chip-active" id="chip3">In Kitchen</span>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot" id="dot4" style="border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.22);"><i class="fas fa-bell"></i></div>
+          <div class="tl-title" id="step4title" style="color:rgba(255,255,255,.32);">⏳ Ready for Pickup</div>
+          <div class="tl-time" style="color:rgba(255,255,255,.22);">Pending</div>
+          <div class="tl-desc" style="color:rgba(255,255,255,.28);">You'll be notified when ready at the counter.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot" id="dot5" style="border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.22);"><i class="fas fa-check-double"></i></div>
+          <div class="tl-title" id="step5title" style="color:rgba(255,255,255,.32);">⏳ Completed</div>
+          <div class="tl-time" style="color:rgba(255,255,255,.22);">Pending</div>
+          <div class="tl-desc" style="color:rgba(255,255,255,.28);">Order collected — enjoy your meal!</div>
+        </div>
+      </div>
+
+      <!-- ITEMS IN ORDER -->
+      <div class="order-items-list">
+        <div class="oi-header">Items in this order</div>
+        <div class="oi-item">
+          <div class="oi-img"><img src="https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=100&h=100&fit=crop" alt="Nasi Lemak"/></div>
+          <div class="oi-name">Nasi Lemak Special</div>
+          <span class="oi-status oi-cooking">Cooking</span>
+          <div class="oi-qty">×2</div>
+          <div class="oi-price">RM 15.00</div>
+        </div>
+        <div class="oi-item">
+          <div class="oi-img"><img src="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=100&h=100&fit=crop" alt="Ramen"/></div>
+          <div class="oi-name">Chicken Ramen</div>
+          <span class="oi-status oi-cooking">Cooking</span>
+          <div class="oi-qty">×1</div>
+          <div class="oi-price">RM 12.00</div>
+        </div>
+        <div class="oi-item">
+          <div class="oi-img"><img src="https://images.unsplash.com/photo-1544145945-f90425340c7e?w=100&h=100&fit=crop" alt="Bubble Tea"/></div>
+          <div class="oi-name">Taro Bubble Tea</div>
+          <span class="oi-status oi-ready">Ready ✓</span>
+          <div class="oi-qty">×2</div>
+          <div class="oi-price">RM 13.00</div>
+        </div>
+      </div>
+
+      <div class="order-footer-row">
+        <button onclick="simulateProgress()" style="padding:11px 22px;background:rgba(0,201,167,.12);border:1px solid rgba(0,201,167,.25);border-radius:12px;color:var(--mint);font-weight:700;cursor:pointer;font-size:.84rem;font-family:'DM Sans',sans-serif;transition:.3s;" onmouseover="this.style.background='rgba(0,201,167,.22)'" onmouseout="this.style.background='rgba(0,201,167,.12)'">▶ Simulate Progress</button>
+        <button onclick="showToastMsg('Modification request sent!')" style="padding:11px 22px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;color:rgba(255,255,255,.7);font-weight:600;cursor:pointer;font-size:.84rem;font-family:'DM Sans',sans-serif;transition:.3s;">✏️ Modify Order</button>
+        <button onclick="showToastMsg('Cancellation request sent to kitchen.')" style="padding:11px 22px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18);border-radius:12px;color:rgba(239,68,68,.7);font-weight:600;cursor:pointer;font-size:.84rem;font-family:'DM Sans',sans-serif;transition:.3s;">✕ Cancel Order</button>
+      </div>
+    </div>
+
+    <!-- RATING PROMPT (shown after complete) -->
+    <div class="rate-card" id="rateCard">
+      <div class="rate-title">🌟 How was your meal?</div>
+      <div class="rate-sub">Your feedback helps us improve. Takes only 5 seconds!</div>
+      <div class="stars-input" id="starsInput">
+        <span class="star-btn" onclick="rateStar(1)">★</span>
+        <span class="star-btn" onclick="rateStar(2)">★</span>
+        <span class="star-btn" onclick="rateStar(3)">★</span>
+        <span class="star-btn" onclick="rateStar(4)">★</span>
+        <span class="star-btn" onclick="rateStar(5)">★</span>
+      </div>
+      <button class="rate-submit" onclick="submitRating()">Submit Rating</button>
+    </div>
+
+    <!-- ORDER HISTORY -->
+    <div class="history-section">
+      <div class="history-title">
+        Order History
+        <span style="font-size:.78rem;color:rgba(255,255,255,.35);font-family:'DM Sans',sans-serif;font-weight:500;">Last 30 days</span>
+      </div>
+      <div class="history-filter">
+        <button class="hist-tab active" onclick="filterHist('all',this)">All</button>
+        <button class="hist-tab" onclick="filterHist('completed',this)">Completed</button>
+        <button class="hist-tab" onclick="filterHist('cancelled',this)">Cancelled</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <!-- RECEIPT MODAL -->
+  <div class="receipt-modal" id="receiptModal" onclick="if(event.target===this)this.style.display='none';">
+    <div class="receipt-box">
+      <div class="receipt-header">
+        <div class="receipt-logo">CanteenGo</div>
+        <div style="font-size:.74rem;color:rgba(255,255,255,.35);margin-top:3px;">Block A · Canteen · 12:34 PM, 20 Mar 2026</div>
+      </div>
+      <hr class="receipt-line"/>
+      <div class="receipt-row"><span>Order ID</span><span style="color:var(--saffron)">#CG-1084</span></div>
+      <div class="receipt-row"><span>Table</span><span>Table 5 · Block A</span></div>
+      <div class="receipt-row"><span>Cashier</span><span>Staff Aminah</span></div>
+      <div class="receipt-row"><span>Type</span><span>Dine In</span></div>
+      <hr class="receipt-line"/>
+      <div class="receipt-row"><span>Nasi Lemak Special × 2</span><span>RM 15.00</span></div>
+      <div class="receipt-row"><span>Chicken Ramen × 1</span><span>RM 12.00</span></div>
+      <div class="receipt-row"><span>Taro Bubble Tea × 2</span><span>RM 13.00</span></div>
+      <hr class="receipt-line"/>
+      <div class="receipt-row"><span>Subtotal</span><span>RM 40.00</span></div>
+      <div class="receipt-row"><span>Service Charge (5%)</span><span>RM 2.00</span></div>
+      <div class="receipt-row"><span>SST (6%)</span><span>RM 2.40</span></div>
+      <hr class="receipt-line"/>
+      <div class="receipt-row bold"><span>TOTAL</span><span style="color:var(--gold)">RM 44.40</span></div>
+      <div class="receipt-row"><span>Payment Method</span><span>Cash</span></div>
+      <div class="r-qr"><img src="https://api.qrserver.com/v1/create-qr-code/?size=86x86&data=CG-1084-receipt&color=1C1C1E&bgcolor=FFFFFF" alt="Receipt QR"/></div>
+      <div style="text-align:center;font-size:.72rem;color:rgba(255,255,255,.28);margin-bottom:14px;">Scan to verify this receipt</div>
+      <div class="receipt-actions">
+        <button class="r-btn r-secondary" onclick="showToastMsg('Receipt sent to email!')"><i class="fas fa-envelope"></i> Email</button>
+        <button class="r-btn r-primary" onclick="document.getElementById('receiptModal').style.display='none'">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastArea" style="position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:10px;"></div>
+
+  <script>
+    // ETA countdown
+    let secs=492;
+    setInterval(()=>{
+      if(secs>0)secs--;
+      const m=Math.floor(secs/60).toString().padStart(2,'0');
+      const s=(secs%60).toString().padStart(2,'0');
+      document.getElementById('etaTimer').textContent=m+':'+s;
+    },1000);
+
+    // Simulate progress
+    let step=3;
+    const progPcts=[0,20,40,60,80,100];
+    function simulateProgress(){
+      step++;
+      const dots=document.querySelectorAll('.tl-dot');
+      if(step<=5){
+        dots[step-1].className='tl-dot active';
+        dots[step-1].innerHTML='<i class="fas fa-utensils"></i>';
+        dots[step-2].className='tl-dot done';
+        dots[step-2].innerHTML='<i class="fas fa-check"></i>';
+        document.getElementById('progressFill').style.width=progPcts[step]+'%';
+        document.getElementById('progressPct').textContent=progPcts[step]+'% complete';
+        if(step===4){
+          document.getElementById('statusBadge').textContent='✅ Ready!';
+          document.getElementById('statusBadge').className='status-badge status-ready';
+          document.querySelectorAll('.oi-status').forEach(s=>{s.className='oi-status oi-ready';s.textContent='Ready ✓';});
+          showToastMsg('🔔 Your order is ready! Please collect at the counter.');
+        }
+        if(step===5){
+          document.getElementById('statusBadge').textContent='✔ Completed';
+          document.getElementById('statusBadge').className='status-badge status-completed';
+          dots[4].className='tl-dot done';
+          dots[4].innerHTML='<i class="fas fa-check"></i>';
+          document.getElementById('progressFill').style.width='100%';
+          document.getElementById('progressPct').textContent='100% complete';
+          document.getElementById('rateCard').style.display='block';
+          showToastMsg('🎉 Order completed! Enjoy your meal!');
+        }
+      }
+    }
+
+    // History data
+    const history=[
+      {id:'#CG-1082',items:'Mee Goreng, Teh Tarik, Cendol',status:'completed',date:'Today, 10:15 AM',total:'RM 17.50'},
+      {id:'#CG-1071',items:'Nasi Ayam, Fresh Orange Juice',status:'completed',date:'Yesterday, 1:22 PM',total:'RM 15.50'},
+      {id:'#CG-1056',items:'Roti Canai, Curry Puff, Bubble Tea',status:'completed',date:'Mon, 8:45 AM',total:'RM 12.50'},
+      {id:'#CG-1048',items:'Laksa Sarawak, Ais Kacang',status:'cancelled',date:'Sun, 12:05 PM',total:'RM 14.00'},
+      {id:'#CG-1033',items:'Nasi Briyani, Teh Tarik',status:'completed',date:'Sat, 1:00 PM',total:'RM 15.50'},
+    ];
+
+    function renderHistory(filter){
+      const filtered=filter==='all'?history:history.filter(h=>h.status===filter);
+      document.getElementById('historyList').innerHTML=filtered.length===0
+        ?'<div style="text-align:center;padding:32px;color:rgba(255,255,255,.3);font-size:.88rem;">No '+filter+' orders found.</div>'
+        :filtered.map(h=>`
+          <div class="history-item" onclick="showToastMsg('Loading ${h.id} details...')">
+            <div class="h-status-dot dot-${h.status}"></div>
+            <div class="h-id">${h.id}</div>
+            <div class="h-items">${h.items}</div>
+            <span class="h-badge hb-${h.status}">${h.status==='completed'?'Completed':'Cancelled'}</span>
+            <div class="h-date">${h.date}</div>
+            <div class="h-total">${h.total}</div>
+            ${h.status==='completed'?`<button class="h-reorder" onclick="event.stopPropagation();showToastMsg('Reorder ${h.id} added to cart!')">Reorder</button>`:''}
+          </div>`).join('');
+    }
+
+    function filterHist(f,btn){
+      document.querySelectorAll('.hist-tab').forEach(t=>t.classList.remove('active'));
+      btn.classList.add('active');
+      renderHistory(f);
+    }
+
+    function setSearch(id){document.getElementById('searchInput').value=id;}
+    function trackOrder(){showToastMsg('Showing live status for #'+document.getElementById('searchInput').value);}
+    function showReceipt(){document.getElementById('receiptModal').style.display='flex';}
+
+    let rating=0;
+    function rateStar(n){
+      rating=n;
+      document.querySelectorAll('.star-btn').forEach((s,i)=>s.classList.toggle('lit',i<n));
+    }
+    function submitRating(){
+      if(!rating){showToastMsg('Please select a star rating first!');return;}
+      showToastMsg('⭐ Thank you! '+rating+'-star review submitted.');
+      document.getElementById('rateCard').style.display='none';
+    }
+
+    function showToastMsg(msg){
+      const ta=document.getElementById('toastArea');
+      const t=document.createElement('div');
+      t.style.cssText='background:rgba(22,22,24,.96);backdrop-filter:blur(20px);border:1px solid rgba(255,107,43,.3);border-radius:14px;padding:13px 18px;font-size:.86rem;animation:slideIn .4s ease;max-width:310px;';
+      t.textContent=msg;
+      ta.appendChild(t);
+      setTimeout(()=>t.remove(),3500);
+    }
+
+    // Init history
+    renderHistory('all');
+  </script>
+  <style>@keyframes slideIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}</style>
+
+    <!-- FOOTER -->
+    <footer style="background:rgba(255,255,255,.02);border-top:1px solid rgba(255,255,255,.06);padding:48px 5% 24px;margin-top:64px;">
+      <div style="max-width:1280px;margin:0 auto;">
+        <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:40px;flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:#ff6b2b;margin-bottom:10px;">CanteenGo</div>
+            <p style="font-size:.86rem;color:rgba(255,255,255,.42);line-height:1.8;margin-bottom:18px;">Smart canteen ordering for universities &amp; campuses. Fast, fresh, easy.</p>
+          </div>
+          <div>
+            <h5 style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:14px;">Navigate</h5>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <a href="menu.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Menu</a>
+              <a href="order.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Place Order</a>
+              <a href="track.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Track Order</a>
+              <a href="delivery.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Delivery</a>
+            </div>
+          </div>
+          <div>
+            <h5 style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:14px;">Account</h5>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <a href="login.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Sign In</a>
+              <a href="login.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Register</a>
+              <a href="about.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">About Us</a>
+              <a href="report.html" style="color:rgba(255,255,255,.5);text-decoration:none;font-size:.85rem;">Admin Panel</a>
+            </div>
+          </div>
+          <div>
+            <h5 style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,.3);margin-bottom:14px;">Contact</h5>
+            <div style="display:flex;flex-direction:column;gap:9px;font-size:.85rem;color:rgba(255,255,255,.45);">
+              <span>📞 +60 12-345 6789</span>
+              <span>✉️ hello@canteengo.my</span>
+              <span>📍 Block A, Level 1</span>
+              <span>⏰ Mon–Sun, 7AM–8PM</span>
+            </div>
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(255,255,255,.06);padding-top:18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.74rem;color:rgba(255,255,255,.22);">
+          <span>© 2026 CanteenGo. All rights reserved.</span>
+          <span>Built with ❤️ for smarter campus canteens</span>
+        </div>
+      </div>
+    </footer>
+
+</body>
+</html>
